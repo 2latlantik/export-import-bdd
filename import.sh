@@ -3,7 +3,8 @@
 # Paramètres 
 USER='root'
 PASSWORD=''
-#EXTRACTFILE=""
+DATABASENAME='test'
+EXTRACTFILE=""
 # Directory
 EXTRACTDIR='extract'
 # Commands
@@ -18,8 +19,8 @@ display_help() {
 	echo "   -u, --user		User to connect to database"
     echo "   -p, --password		Password to connect to database"
     echo "   -f, --file		Archive for extraction"
+	echo "   -db, --dataBase	Name of new	date base"
     echo
-    # echo some stuff here for the -a or --add-options 
     exit 1
 }
 
@@ -27,15 +28,19 @@ while true ; do
   case "$1" in
     --user | -u) 
 		export USER="$2" ; 
-		shift 
+		shift 2
 	;;
     --password | -p) 
-		export PASSWORD ="$2" ; 
-		shift  
+		export PASSWORD="$2" ; 
+		shift 2 
 	;;
 	--file | -f) 
 		export EXTRACTFILE="$2" ; 
-		shift 
+		shift 2
+	;;
+	--dataBase | -db) 
+		export DATABASENAME="$2" ; 
+		shift 2 
 	;;
 	-h | --help)
          display_help  # Call your function
@@ -44,6 +49,7 @@ while true ; do
     *) break ;;	
   esac
 done
+
 
 # Création du répertoire de travail
 if [ -d "$EXTRACTDIR" ]; then
@@ -56,5 +62,5 @@ ${UNCOMPRESSCMD} save/${EXTRACTFILE} -C ${EXTRACTDIR}
 
 # Parcours des fichiers
 find ${EXTRACTDIR} -name '*.sql' | while read line; do 
-	mysql -u ${USER} test < $line
+	mysql -u ${USER} ${DATABASENAME} < $line
 done

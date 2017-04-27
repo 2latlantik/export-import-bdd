@@ -17,7 +17,7 @@ COMPRESSIONEXT=".tar.gz"
 RETENTION=5
 # Taille Table max et reste BDD 
 tableTailleMax=20971520
-baseTailleMin=36700160
+baseTailleMin=31457280
 
 #########################
 # The command line help #
@@ -29,7 +29,6 @@ display_help() {
     echo "   -p, --password		Password to connect to database"
     echo "   -db, --dataBase		Date Base exported"
     echo
-    # echo some stuff here for the -a or --add-options 
     exit 1
 }
 
@@ -37,15 +36,15 @@ while true ; do
   case "$1" in
     --user | -u) 
 		export USER="$2" ; 
-		shift 
+		shift 2
 	;;
     --password | -p) 
 		export PASSWORD ="$2" ; 
-		shift  
+		shift  2
 	;;
 	--dataBase | -db) 
 		export dataBaseDump="$2" ; 
-		shift 
+		shift 2
 	;;
 	-h | --help)
          display_help  # Call your function
@@ -103,14 +102,18 @@ do
 		do			
 			mysqldump -u $USER $createTable --quick --add-locks --lock-tables --extended-insert --where "id%$nbDecoupage=$resteModulo" $dataBaseDump $nomTable  > ${DATATMP}/${DATANAME}/${nomTable}_${resteModulo}.sql
 			createTable='-t'
-		done
-		ignoredTablesString+=" --ignore-table=${dataBaseDump}.${nomTable}"
-		dataLeft=$((dataLeft-$tailleTable))
+		done		
+	else
+			mysqldump -u $USER $createTable --quick --add-locks --lock-tables --extended-insert  $dataBaseDump $nomTable  > ${DATATMP}/${DATANAME}/${nomTable}.sql
 	fi	
+	ignoredTablesString+=" --ignore-table=${dataBaseDump}.${nomTable}"
+	dataLeft=$((dataLeft-$tailleTable))
 done
 
+echo $dataLeft
+
 # Si reste des data
-if [ $dataLeft > 0 ]
+if [ $dataLeft -gt 0 ]
 then
 	mysqldump -u $USER  -t --quick --add-locks --lock-tables --extended-insert $ignoredTablesString $dataBaseDump   > ${DATATMP}/${DATANAME}/${dataBaseDump}.sql
 fi
